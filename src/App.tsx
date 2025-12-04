@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HabitStorageService, StoredHabit } from './services/HabitStorageService';
 
 import Header from './components/Header';
@@ -11,6 +11,8 @@ import SettingsPage from './pages/SettingsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 
 import svgPaths from "./imports/svg-a6cdtbew9j";
+
+import { LevelProvider } from './contexts/LevelContext';
 
 type HabitType = 'walking' | 'water' | 'exercise' | 'sleep';
 type NavigationTab = 'habits' | 'charts';
@@ -103,11 +105,19 @@ const defaultHabits: StoredHabit[] = [
 HabitStorageService.initDefaultHabitsIfEmpty(defaultHabits);
 
 export default function App() {
+  // wrap the app with LevelProvider at top-level render (see JSX return)
   const [habits, setHabits] = useState<Record<HabitType, HabitState>>({
     walking: { isRunning: false, elapsedTime: 0, progress: 0, status: 'idle', startTime: null, distance: 0 },
     water: { isRunning: false, elapsedTime: 0, progress: 0, status: 'idle', startTime: null, liters: 0 },
     exercise: { isRunning: false, elapsedTime: 0, progress: 0, status: 'idle', startTime: null },
     sleep: { isRunning: false, elapsedTime: 0, progress: 0, status: 'idle', startTime: null },
+  });
+  // track previous statuses to detect transitions to 'completed'
+  const prevStatuses = useRef<Record<HabitType, string>>({
+    walking: 'idle',
+    water: 'idle',
+    exercise: 'idle',
+    sleep: 'idle',
   });
 
   const [lastPosition, setLastPosition] = useState<GeolocationPosition | null>(null);
@@ -374,6 +384,26 @@ export default function App() {
       return prev;
     });
   }, [habits.water.liters]);
+  
+  // Award XP once per day when a habit transitions to 'completed'
+  // We'll call LevelContext.grantXPForHabit via a ref-hook consumer.
+  const levelActionsRef = useRef<{ grantXPForHabit?: (id: string) => boolean } | null>(null);
+
+  // Effect to detect transitions
+  useEffect(() => {
+    const types: HabitType[] = ['walking', 'water', 'exercise', 'sleep'];
+    types.forEach(t => {
+      const prev = prevStatuses.current[t];
+      const current = habits[t].status;
+      if (prev !== 'completed' && current === 'completed') {
+        // credit XP for habit t (use simple id = t)
+        if (levelActionsRef.current?.grantXPForHabit) {
+          levelActionsRef.current.grantXPForHabit(t);
+        }
+      }
+      prevStatuses.current[t] = current;
+    });
+  }, [habits]);
 
 
 
@@ -388,34 +418,38 @@ export default function App() {
   };
 
   return (
-    <div className="bg-neutral-100 relative size-full min-h-screen" data-name="iPhone 16 Pro - 1">
-      {/* Header with hamburger icon */}
-      <Header
-        onConfigClick={() => setShowSettings(true)}
-        setDrawerOpen={setDrawerOpen}
-      />
-      {/* Side Drawer Menu */}
-      <SideDrawerMenu
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onNavigate={handleNavigate}
-        activeRoute={activeRoute}
-      />
-      <div className="flex">
-        {showSettings ? (
-          <SettingsPage
-            locationEnabled={locationEnabled}
-            coordinates={coordinates}
-            handleToggleLocation={handleToggleLocation}
-          />
-        ) : (
-          <>
-            {activeRoute === 'dashboard' && <HabitsPage />}
-            {activeRoute === 'charts' && <ChartsPage habits={habits} />}
-            {activeRoute === 'recommendations' && <RecommendationsPage />}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+     <LevelProvider>
+       <div className="bg-neutral-100 relative size-full min-h-screen" data-name="iPhone 16 Pro - 1">
+         {/* LevelDisplay moved into Header (center) */}
+         {/* Header with hamburger icon */}
+         <Header
+           onConfigClick={() => setShowSettings(true)}
+           setDrawerOpen={setDrawerOpen}
+         />
+         {/* Side Drawer Menu */}
+         <SideDrawerMenu
+           open={drawerOpen}
+           onClose={() => setDrawerOpen(false)}
+           onNavigate={handleNavigate}
+           activeRoute={activeRoute}
+         />
+         <div className="flex">
+           {showSettings ? (
+             <SettingsPage
+               locationEnabled={locationEnabled}
+               coordinates={coordinates}
+               handleToggleLocation={handleToggleLocation}
+             />
+           ) : (
+             <>
+               {activeRoute === 'dashboard' && <HabitsPage />}
+               {activeRoute === 'charts' && <ChartsPage />}
+               {activeRoute === 'recommendations' && <RecommendationsPage />}
+             </>
+           )}
+         </div>
+       </div>
+     </LevelProvider>
+   );
+ }
+ 
