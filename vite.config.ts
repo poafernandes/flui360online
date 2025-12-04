@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
     const tailwindcss = (await import('@tailwindcss/vite')).default;
 
     return {
-      base: '/flui360online/', // ← adiciona isto para GitHub Pages
+      base: '/flui360online/', 
       plugins: [
         react(),
         tailwindcss(),
