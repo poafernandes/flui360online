@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onConfigClick, setDrawerOpen }) => {
                     aria-label="Abrir menu lateral"
                     title="Menu"
                     onClick={() => setDrawerOpen && setDrawerOpen(true)}
-                    className="flex items-center justify-center p-2 bg-white rounded-full shadow-md border border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:opacity-80 transition-all"
+                    className="flex items-center justify-center p-2 bg-white rounded-full shadow-md border border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:opacity-80 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                     style={{ minWidth: 48, minHeight: 48 }}
                 >
                     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ onConfigClick, setDrawerOpen }) => {
                     aria-label="Abrir configurações do aplicativo"
                     title="Configurações"
                     onClick={onConfigClick}
-                    className="flex items-center justify-center p-2 bg-white rounded-full shadow-md border border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:opacity-80 transition-all"
+                    className="flex items-center justify-center p-2 bg-white rounded-full shadow-md border border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:opacity-80 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                     style={{ minWidth: 48, minHeight: 48 }}
                 >
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-settings">

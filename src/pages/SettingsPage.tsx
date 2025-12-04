@@ -38,9 +38,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ locationEnabled, coordinate
   return (
     <div className="px-6 pt-2 w-full min-h-screen flex flex-col items-center">
       <div className="w-full max-w-md mx-auto">
-        {/* Page Title Container: appears immediately below the fixed header */}
+        {/* Page Title Container */}
         <div className="mb-6">
-          <h2 className="font-['Inter:Bold',sans-serif] text-[20px] text-gray-800">Configurações</h2>
+          <h1 className="font-['Inter:Bold',sans-serif] text-[20px] text-gray-800">Configurações</h1>
         </div>
         {/* Primary Content */}
         <div className="space-y-4">
@@ -103,9 +103,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ locationEnabled, coordinate
                           </div>
                         ), { duration: Infinity });
                       }}
-                      className="ml-1 inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-500 text-white shadow-sm hover:opacity-90"
+                      className="ml-1 px-2 py-1 rounded text-xs bg-red-500 text-white shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
                     >
-                      −
+                      Excluir hábito
                     </button>
                   </div>
                 </div>
