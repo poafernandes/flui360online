@@ -12,7 +12,7 @@ import RecommendationsPage from './pages/RecommendationsPage';
 
 import svgPaths from "./imports/svg-a6cdtbew9j";
 
-import { LevelProvider } from './contexts/LevelContext';
+import { LevelProvider, useLevel } from './contexts/LevelContext';
 
 type HabitType = 'walking' | 'water' | 'exercise' | 'sleep';
 type NavigationTab = 'habits' | 'charts';
@@ -385,27 +385,27 @@ export default function App() {
     });
   }, [habits.water.liters]);
   
-  // Award XP once per day when a habit transitions to 'completed'
-  // We'll call LevelContext.grantXPForHabit via a ref-hook consumer.
-  const levelActionsRef = useRef<{ grantXPForHabit?: (id: string) => boolean } | null>(null);
+  // XPWatcher: must be rendered inside LevelProvider so it can use useLevel()
+  function XPWatcher({ habits, prevStatuses }: { habits: Record<HabitType, HabitState>; prevStatuses: React.MutableRefObject<Record<HabitType, string>> }) {
+    const { grantXPForHabit } = useLevel();
 
-  // Effect to detect transitions
-  useEffect(() => {
-    const types: HabitType[] = ['walking', 'water', 'exercise', 'sleep'];
-    types.forEach(t => {
-      const prev = prevStatuses.current[t];
-      const current = habits[t].status;
-      if (prev !== 'completed' && current === 'completed') {
-        // credit XP for habit t (use simple id = t)
-        if (levelActionsRef.current?.grantXPForHabit) {
-          levelActionsRef.current.grantXPForHabit(t);
+    useEffect(() => {
+      const types: HabitType[] = ['walking', 'water', 'exercise', 'sleep'];
+      types.forEach(t => {
+        const prev = prevStatuses.current[t];
+        const current = habits[t].status;
+        if (prev !== 'completed' && current === 'completed') {
+          const granted = grantXPForHabit(t); // habit id is the built-in type string
+          // optional: log for debugging
+          console.log(`[XPWatcher] XP grant for "${t}": ${granted ? 'granted' : 'already-granted'}`);
         }
-      }
-      prevStatuses.current[t] = current;
-    });
-  }, [habits]);
+        prevStatuses.current[t] = current;
+      });
+      // run whenever habits object changes
+    }, [habits, grantXPForHabit, prevStatuses]);
 
-
+    return null;
+  }
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   type RouteKey = 'dashboard' | 'charts' | 'recommendations';
@@ -426,6 +426,8 @@ export default function App() {
            onConfigClick={() => setShowSettings(true)}
            setDrawerOpen={setDrawerOpen}
          />
+         {/* XP watcher runs inside the provider so it can call grantXPForHabit */}
+         <XPWatcher habits={habits} prevStatuses={prevStatuses} />
          {/* Side Drawer Menu */}
          <SideDrawerMenu
            open={drawerOpen}
@@ -452,4 +454,3 @@ export default function App() {
      </LevelProvider>
    );
  }
- 

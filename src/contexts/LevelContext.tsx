@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { HabitStorageService } from '../services/HabitStorageService';
 
 type LevelContextType = {
   level: number;
@@ -116,6 +117,34 @@ export const LevelProvider: React.FC<React.PropsWithChildren<{}>> = ({ children 
     addXP(XP_PER_HABIT_COMPLETION);
     return true;
   };
+
+  // Listen for storage-backed habit updates and grant XP when stored habits meet their targets.
+  // This ensures XP is awarded even when updates come from components that write directly to localStorage.
+  useEffect(() => {
+    const scanAndGrant = () => {
+      try {
+        resetDailyIfNeeded();
+        const stored = HabitStorageService.getHabits();
+        stored.forEach(h => {
+          const id = h.name;
+          const value = (h as any).initialValue ?? 0;
+          const target = (h as any).targetValue ?? 0;
+          if (value >= target) {
+            // grantXPForHabit will no-op if already granted today
+            grantXPForHabit(id);
+          }
+        });
+      } catch (err) {
+        console.error('[LevelContext] scanAndGrant error', err);
+      }
+    };
+
+    window.addEventListener('habitsUpdated', scanAndGrant);
+    // run once on mount to catch any already-completed stored habits
+    scanAndGrant();
+    return () => window.removeEventListener('habitsUpdated', scanAndGrant);
+    // grantXPForHabit and resetDailyIfNeeded are stable here (defined in same scope)
+  }, []);
 
   const clearLevelUpToast = () => setShowLevelUpToast(false);
 
