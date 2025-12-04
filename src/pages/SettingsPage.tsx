@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { HabitStorageService, StoredHabit } from '../services/HabitStorageService';
 
 
@@ -65,6 +66,47 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ locationEnabled, coordinate
                       className="w-16 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-2 focus:ring-cyan-200"
                       onChange={e => handleUnitChange(habit.name, e.target.value)}
                     />
+                    {/* delete button (only in settings) */}
+                    <button
+                      aria-label={`Excluir hábito ${habit.name}`}
+                      title={`Excluir ${habit.name}`}
+                      onClick={() => {
+                        // confirmation toast with action buttons
+                        toast.custom((t) => (
+                          <div className="bg-white rounded-lg shadow-md p-3 flex flex-col gap-3 w-72">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold">!</div>
+                              <div>
+                                <div className="font-semibold text-gray-800">Confirmar exclusão</div>
+                                <div className="text-xs text-gray-600">Deseja excluir o hábito "{habit.name}"? Essa ação não pode ser desfeita.</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                className="px-3 py-1 rounded text-sm bg-gray-100 text-gray-700"
+                                onClick={() => toast.dismiss(t.id)}
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                className="px-3 py-1 rounded text-sm bg-red-600 text-white"
+                                onClick={() => {
+                                  HabitStorageService.deleteHabit(habit.name);
+                                  // close confirm toast and show feedback
+                                  toast.dismiss(t.id);
+                                  toast.success('Hábito excluído');
+                                }}
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          </div>
+                        ), { duration: Infinity });
+                      }}
+                      className="ml-1 inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-500 text-white shadow-sm hover:opacity-90"
+                    >
+                      −
+                    </button>
                   </div>
                 </div>
               ))}

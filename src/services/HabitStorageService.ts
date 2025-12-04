@@ -50,4 +50,17 @@ export const HabitStorageService = {
       console.log('[HabitStorageService] updateHabit: Habit not found for update:', updatedHabit);
     }
   },
+
+  deleteHabit(name: string): void {
+    const habits = HabitStorageService.getHabits();
+    const idx = habits.findIndex(h => h.name === name);
+    if (idx !== -1) {
+      const removed = habits.splice(idx, 1)[0];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+      console.log('[HabitStorageService] deleteHabit: Removed habit:', removed);
+      window.dispatchEvent(new Event('habitsUpdated'));
+    } else {
+      console.log('[HabitStorageService] deleteHabit: Habit not found:', name);
+    }
+  },
 };

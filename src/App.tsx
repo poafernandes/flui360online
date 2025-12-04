@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { HabitStorageService, StoredHabit } from './services/HabitStorageService';
+import { LevelProvider, useLevel } from './contexts/LevelContext';
+import { Toaster } from 'sonner';
 
 import Header from './components/Header';
 import SideDrawerMenu from './components/SideDrawerMenu';
@@ -11,8 +13,6 @@ import SettingsPage from './pages/SettingsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 
 import svgPaths from "./imports/svg-a6cdtbew9j";
-
-import { LevelProvider, useLevel } from './contexts/LevelContext';
 
 type HabitType = 'walking' | 'water' | 'exercise' | 'sleep';
 type NavigationTab = 'habits' | 'charts';
@@ -420,6 +420,8 @@ export default function App() {
   return (
      <LevelProvider>
        <div className="bg-neutral-100 relative size-full min-h-screen" data-name="iPhone 16 Pro - 1">
+        {/* sonner toasts */}
+        <Toaster position="top-right" richColors />
          {/* LevelDisplay moved into Header (center) */}
          {/* Header with hamburger icon */}
          <Header
@@ -454,3 +456,4 @@ export default function App() {
      </LevelProvider>
    );
  }
+ 
